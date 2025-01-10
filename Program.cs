@@ -1,4 +1,6 @@
-﻿namespace CircularDominoChain
+﻿using System.Diagnostics;
+
+namespace CircularDominoChain
 {
     internal class Program
     {
@@ -32,28 +34,71 @@
                 new int[2] { 2, 3 }
             };
 
-            PrintDominos(dominosValid5Stones, "original: ");
+            var dominosInvalid16Stones = new List<int[]>
+            {
+                new int[2] { 0, 1 },
+                new int[2] { 0, 2 },
+                new int[2] { 0, 3 },
+                new int[2] { 0, 4 },
+                new int[2] { 0, 5 },
+                new int[2] { 1, 1 },
+                new int[2] { 1, 2 },
+                new int[2] { 1, 4 },
+                new int[2] { 2, 2 },
+                new int[2] { 2, 3 },
+                new int[2] { 2, 4 },
+                new int[2] { 2, 5 },
+                new int[2] { 3, 1 },
+                new int[2] { 3, 3 },
+                new int[2] { 3, 4 },
+                new int[2] { 3, 5 },
+            };
 
-            var ordered = Solution(dominosValid5Stones);
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
+            try
+            {
+                PrintDominos(dominosValid5Stones, "original: ");
 
-            PrintDominos(ordered, "first found valid circular domino chain: ");
+                var ordered = Solution(dominosValid5Stones);
 
-            PrintDominos(dominosValid3Stones, "original: ");
+                PrintDominos(ordered, "first found valid circular domino chain: ");
 
-            ordered = Solution(dominosValid3Stones);
+                PrintDominos(dominosValid3Stones, "original: ");
 
-            PrintDominos(ordered, "first found valid circular domino chain: ");
+                ordered = Solution(dominosValid3Stones);
 
-            PrintDominos(dominosInvalid3Stones, "original: ");
+                PrintDominos(ordered, "first found valid circular domino chain: ");
 
-            ordered = Solution(dominosInvalid3Stones);
+                PrintDominos(dominosInvalid16Stones, "original: ");
 
-            PrintDominos(ordered, "first found valid circular domino chain: ");
+                ordered = Solution(dominosInvalid16Stones);
 
+                PrintDominos(ordered, "first found valid circular domino chain: ");
+
+                PrintDominos(dominosInvalid3Stones, "original: ");
+
+                ordered = Solution(dominosInvalid3Stones);
+
+                PrintDominos(ordered, "first found valid circular domino chain: ");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            stopWatch.Stop();
+            Console.WriteLine(stopWatch.Elapsed);
         }
 
         public static List<int[]> Solution(List<int[]> dominos)
         {
+            var stoneHalfCounts = dominos
+                                    .SelectMany(array => array)
+                                    .GroupBy(n => n);
+            if (stoneHalfCounts.Any(item => item.Count() % 2 != 0))
+                throw new InvalidDataException("Impossible to correctly order set with odd count of same domino halfs");
+
             if (dominos.Count < 3)
                 throw new InvalidDataException("Impossible to correctly order set of less than 3 dominos");
 
@@ -61,7 +106,7 @@
             for (int i = 0; i < dominos.Count; i++)
             {
                 var currentDomino = dominos[i];
-                var usedDominos = new HashSet<int[]>() { currentDomino };
+                var usedDominos = new HashSet<int[]>() { dominos[i] };
                 orderedDominos = [currentDomino];
                 var foundDomino = true;
                 var j = 0;
