@@ -11,6 +11,7 @@ namespace CircularDominoChain
 
             Write a program in C# which computes the chain for a random set of dominos. If a circular chain is not possible the program should output this.
         */
+        private static bool _printDebugInfo = true;
         static void Main(string[] args)
         {
             // for empty pips please use 0
@@ -58,29 +59,21 @@ namespace CircularDominoChain
             stopWatch.Start();
             try
             {
-                PrintDominos(dominosValid5Stones, "original: ");
-
+                PrintDominos(dominosValid5Stones, "original: ", false);
                 var ordered = Solution(dominosValid5Stones);
+                PrintDominos(ordered, "first found of valid circular domino chain: ", false);
 
-                PrintDominos(ordered, "first found valid circular domino chain: ");
-
-                PrintDominos(dominosValid3Stones, "original: ");
-
+                PrintDominos(dominosValid3Stones, "original: ", false);
                 ordered = Solution(dominosValid3Stones);
+                PrintDominos(ordered, "first found of valid circular domino chain: ", false);
 
-                PrintDominos(ordered, "first found valid circular domino chain: ");
-
-                PrintDominos(dominosInvalid16Stones, "original: ");
-
+                PrintDominos(dominosInvalid16Stones, "original: ", false);
                 ordered = Solution(dominosInvalid16Stones);
+                PrintDominos(ordered, "first found of valid circular domino chain: ", false);
 
-                PrintDominos(ordered, "first found valid circular domino chain: ");
-
-                PrintDominos(dominosInvalid3Stones, "original: ");
-
+                PrintDominos(dominosInvalid3Stones, "original: ", false);
                 ordered = Solution(dominosInvalid3Stones);
-
-                PrintDominos(ordered, "first found valid circular domino chain: ");
+                PrintDominos(ordered, "first found of valid circular domino chain: ", false);
             }
             catch (Exception ex)
             {
@@ -141,7 +134,7 @@ namespace CircularDominoChain
                     j++;
                 }
 
-                PrintDominos(orderedDominos, $"tried to order starting from [{dominos[i][0]}|{dominos[i][1]}]: ");
+                PrintDominos(orderedDominos, $"tried to order starting from [{usedDominos.First()[0]}|{usedDominos.First()[1]}]: ");
                 if (orderedDominos.Count == dominos.Count && orderedDominos[0][0] == orderedDominos[orderedDominos.Count - 1][1])
                 {
                     return orderedDominos;
@@ -182,7 +175,7 @@ namespace CircularDominoChain
                     j++;
                 }
 
-                PrintDominos(orderedDominos, $"tried to order starting from [{dominos[i][1]}|{dominos[i][0]}]: ");
+                PrintDominos(orderedDominos, $"tried to order starting from [{usedDominos.First()[0]}|{usedDominos.First()[1]}]: ");
                 if (orderedDominos.Count == dominos.Count && orderedDominos[0][0] == orderedDominos[orderedDominos.Count - 1][1])
                 {
                     return orderedDominos;
@@ -192,8 +185,11 @@ namespace CircularDominoChain
             throw new InvalidDataException("Impossible to correctly order set");
         }
 
-        public static void PrintDominos(List<int[]> dominos, string message)
+        public static void PrintDominos(List<int[]> dominos, string message, bool debugInfo = true)
         {
+            if (!_printDebugInfo && debugInfo)
+                return;
+
             Console.Write(message);
             foreach (var domino in dominos)
             {
