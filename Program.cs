@@ -98,84 +98,13 @@ namespace CircularDominoChain
             List<int[]>? orderedDominos = null;
             for (int i = 0; i < dominos.Count; i++)
             {
-                var currentDomino = dominos[i];
-                var usedDominos = new HashSet<int[]>() { dominos[i] };
-                orderedDominos = [currentDomino];
-                var foundDomino = true;
-                var j = 0;
-
-                while (dominos.Count != usedDominos.Count && (j < dominos.Count || foundDomino))
-                {
-                    if (j == dominos.Count)
-                    {
-                        foundDomino = false;
-                        j = 0;
-                    }
-
-                    var tmpDomino = dominos[j];
-                    if (!usedDominos.Contains(tmpDomino))
-                    {
-                        if (currentDomino[1] == tmpDomino[0])
-                        {
-                            usedDominos.Add(tmpDomino);
-                            currentDomino = tmpDomino;
-                            orderedDominos.Add(currentDomino);
-                            foundDomino = true;
-                        }
-                        else if (currentDomino[1] == tmpDomino[1])
-                        {
-                            usedDominos.Add(tmpDomino);
-                            currentDomino = [tmpDomino[1], tmpDomino[0]];
-                            orderedDominos.Add(currentDomino);
-                            foundDomino = true;
-                        }
-                    }
-
-                    j++;
-                }
-
-                PrintDominos(orderedDominos, $"tried to order starting from [{usedDominos.First()[0]}|{usedDominos.First()[1]}]: ");
+                orderedDominos = OrderDominos(dominos, dominos[i], dominos[i]);
                 if (orderedDominos.Count == dominos.Count && orderedDominos[0][0] == orderedDominos[orderedDominos.Count - 1][1])
                 {
                     return orderedDominos;
                 }
 
-                currentDomino = [dominos[i][1], dominos[i][0]];
-                usedDominos = new HashSet<int[]>() { dominos[i] };
-                orderedDominos = [currentDomino];
-                foundDomino = true;
-                j = 0;
-                while (dominos.Count != usedDominos.Count && (j < dominos.Count || foundDomino))
-                {
-                    if (j == dominos.Count)
-                    {
-                        foundDomino = false;
-                        j = 0;
-                    }
-
-                    var tmpDomino = dominos[j];
-                    if (!usedDominos.Contains(tmpDomino))
-                    {
-                        if (currentDomino[1] == tmpDomino[0])
-                        {
-                            usedDominos.Add(tmpDomino);
-                            currentDomino = tmpDomino;
-                            orderedDominos.Add(currentDomino);
-                            foundDomino = true;
-                        }
-                        else if (currentDomino[1] == tmpDomino[1])
-                        {
-                            usedDominos.Add(tmpDomino);
-                            currentDomino = [tmpDomino[1], tmpDomino[0]];
-                            orderedDominos.Add(currentDomino);
-                            foundDomino = true;
-                        }
-                    }
-
-                    j++;
-                }
-
-                PrintDominos(orderedDominos, $"tried to order starting from [{usedDominos.First()[0]}|{usedDominos.First()[1]}]: ");
+                orderedDominos = OrderDominos(dominos, dominos[i], [dominos[i][1], dominos[i][0]]);
                 if (orderedDominos.Count == dominos.Count && orderedDominos[0][0] == orderedDominos[orderedDominos.Count - 1][1])
                 {
                     return orderedDominos;
@@ -183,6 +112,47 @@ namespace CircularDominoChain
             }
 
             throw new InvalidDataException("Impossible to correctly order set");
+        }
+
+        public static List<int[]> OrderDominos(List<int[]> dominos, int[] originalDomino, int[] currentDomino)
+        {
+            var usedDominos = new HashSet<int[]>() { originalDomino };
+            var orderedDominos = new List<int[]> { currentDomino };
+            var foundDomino = true;
+            var j = 0;
+
+            while (dominos.Count != usedDominos.Count && (j < dominos.Count || foundDomino))
+            {
+                if (j == dominos.Count)
+                {
+                    foundDomino = false;
+                    j = 0;
+                }
+
+                var tmpDomino = dominos[j];
+                if (!usedDominos.Contains(tmpDomino))
+                {
+                    if (currentDomino[1] == tmpDomino[0])
+                    {
+                        usedDominos.Add(tmpDomino);
+                        currentDomino = tmpDomino;
+                        orderedDominos.Add(currentDomino);
+                        foundDomino = true;
+                    }
+                    else if (currentDomino[1] == tmpDomino[1])
+                    {
+                        usedDominos.Add(tmpDomino);
+                        currentDomino = [tmpDomino[1], tmpDomino[0]];
+                        orderedDominos.Add(currentDomino);
+                        foundDomino = true;
+                    }
+                }
+
+                j++;
+            }
+
+            PrintDominos(orderedDominos, $"tried to order starting from [{usedDominos.First()[0]}|{usedDominos.First()[1]}]: ");
+            return orderedDominos;
         }
 
         public static void PrintDominos(List<int[]> dominos, string message, bool debugInfo = true)
