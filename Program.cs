@@ -18,7 +18,14 @@ namespace CircularDominoChain
             var dominosValid3Stones = new List<int[]> {
                 new int[2] { 2, 1 },
                 new int[2] { 1, 3 },
-                new int[2] { 2, 3 }
+                new int[2] { 2, 3 },
+            }; 
+            
+            var dominosValid4Stones = new List<int[]> {
+                new int[2] { 2, 1 },
+                new int[2] { 2, 3 },
+                new int[2] { 1, 3 },
+                new int[2] { 2, 2 },
             };
 
             var dominosValid5Stones = new List<int[]> {
@@ -26,13 +33,28 @@ namespace CircularDominoChain
                 new int[2] { 2, 1 },
                 new int[2] { 3, 4 },
                 new int[2] { 1, 3 },
-                new int[2] { 0, 4 }
+                new int[2] { 0, 4 },
+            };
+
+            var dominosValid12Stones = new List<int[]> {
+                new int[2] { 0, 2 },
+                new int[2] { 2, 1 },
+                new int[2] { 1, 6 },
+                new int[2] { 2, 6 },
+                new int[2] { 2, 2 },
+                new int[2] { 2, 4 },
+                new int[2] { 4, 0 },
+                new int[2] { 0, 1 },
+                new int[2] { 4, 1 },
+                new int[2] { 4, 6 },
+                new int[2] { 0, 6 },
+                new int[2] { 6, 6 },
             };
 
             var dominosInvalid3Stones = new List<int[]> {
                 new int[2] { 4, 1 },
                 new int[2] { 1, 2 },
-                new int[2] { 2, 3 }
+                new int[2] { 2, 3 },
             };
 
             var dominosInvalid16Stones = new List<int[]>
@@ -55,50 +77,70 @@ namespace CircularDominoChain
                 new int[2] { 3, 5 },
             };
 
-            Stopwatch stopWatch = new Stopwatch();
-            stopWatch.Start();
             try
             {
-                PrintDominos(dominosValid5Stones, "original: ", false);
-                var ordered = Solution(dominosValid5Stones);
-                PrintDominos(ordered, "first found of valid circular domino chain: ", false);
+                //PrintDominos(dominosValid5Stones, "original: ", false);
+                //var ordered = Solution(dominosValid5Stones);
+                //PrintDominos(ordered, "first found of valid circular domino chain: ", false);
 
-                PrintDominos(dominosValid3Stones, "original: ", false);
-                ordered = Solution(dominosValid3Stones);
-                PrintDominos(ordered, "first found of valid circular domino chain: ", false);
+                //PrintDominos(dominosValid3Stones, "original: ", false);
+                //var ordered = Solution(dominosValid3Stones);
+                //PrintDominos(ordered, "first found of valid circular domino chain: ", false);
 
-                PrintDominos(dominosInvalid16Stones, "original: ", false);
-                ordered = Solution(dominosInvalid16Stones);
-                PrintDominos(ordered, "first found of valid circular domino chain: ", false);
+                //PrintDominos(dominosInvalid16Stones, "original: ", false);
+                //var ordered = Solution(dominosInvalid16Stones);
+                //PrintDominos(ordered, "first found of valid circular domino chain: ", false);
 
-                PrintDominos(dominosInvalid3Stones, "original: ", false);
-                ordered = Solution(dominosInvalid3Stones);
+                //PrintDominos(dominosInvalid3Stones, "original: ", false);
+                //var ordered = Solution(dominosInvalid3Stones);
+                //PrintDominos(ordered, "first found of valid circular domino chain: ", false);
+
+                //PrintDominos(dominosValid4Stones, "original: ", false);
+                //var ordered = Solution(dominosValid4Stones);
+                //PrintDominos(ordered, "first found of valid circular domino chain: ", false);
+
+                PrintDominos(dominosValid12Stones, "original: ", false);
+                var ordered = Solution(dominosValid12Stones);
                 PrintDominos(ordered, "first found of valid circular domino chain: ", false);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-
-            stopWatch.Stop();
-            Console.WriteLine(stopWatch.Elapsed);
         }
 
         public static List<int[]> Solution(List<int[]> dominos)
         {
-            var stoneHalfCounts = dominos
-                                    .SelectMany(array => array)
-                                    .GroupBy(n => n);
-            if (stoneHalfCounts.Any(item => item.Count() % 2 != 0))
-                throw new InvalidDataException("Impossible to correctly order set with odd count of same domino halfs");
+            ArgumentNullException.ThrowIfNull(dominos);
 
             if (dominos.Count < 3)
                 throw new InvalidDataException("Impossible to correctly order set of less than 3 dominos");
 
-            List<int[]>? orderedDominos = null;
+            var stoneHalfCounts = dominos
+                                    .SelectMany(array => array)
+                                    .GroupBy(n => n);
+
+            if (stoneHalfCounts.Any(item => item.Count() % 2 != 0))
+                throw new InvalidDataException("Impossible to correctly order set with odd count of same domino halfs");
+
+            var normalizedDominos = dominos
+                    .Select(d => d[0] <= d[1] ? d : [d[1], d[0]])
+                    .ToList();
+
+            // Check for duplicates
+            var duplicates = normalizedDominos
+                .GroupBy(d => $"[{d[0]}|{d[1]}]")
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key);
+
+            if (duplicates.Any())
+            {
+                throw new InvalidDataException($"Duplicate dominos detected: {string.Join(", ", duplicates)}");
+            }
+
             for (int i = 0; i < dominos.Count; i++)
             {
-                orderedDominos = OrderDominos(dominos, dominos[i], dominos[i]);
+                var orderedDominos = OrderDominos(dominos, dominos[i], dominos[i]);
                 if (orderedDominos.Count == dominos.Count && orderedDominos[0][0] == orderedDominos[orderedDominos.Count - 1][1])
                 {
                     return orderedDominos;
@@ -160,13 +202,9 @@ namespace CircularDominoChain
             if (!_printDebugInfo && debugInfo)
                 return;
 
-            Console.Write(message);
-            foreach (var domino in dominos)
-            {
-                Console.Write($"[{domino[0]}|{domino[1]}] ");
-            }
-
-            Console.WriteLine();
+            Console.WriteLine($"{message}{string.Join(" ", dominos
+                                        .Select(d => $"[{d[0]}|{d[1]}]")
+                                        )}");
         }
     }
 }
